@@ -3,8 +3,8 @@ import shutil
 from sklearn.model_selection import train_test_split
 
 # Define el path a la carpeta de imágenes
-images_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images.tar/images'  # Actualiza la ruta según la ubicación correcta
-output_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images'
+images_dir = 'D:\Documentos\Programs\ML-Animals\ML-Animals\data\images_1'  # Actualiza la ruta según la ubicación correcta
+output_dir = 'D:\Documentos\Programs\ML-Animals\ML-Animals\data\images'
 
 # Lista todas las imágenes y asume que los nombres de las imágenes contienen el nombre de la raza
 all_images = [f for f in os.listdir(images_dir) if f.endswith('.jpg')]
