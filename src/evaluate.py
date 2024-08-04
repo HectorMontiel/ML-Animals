@@ -2,7 +2,12 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 def evaluate_model(model_path, validation_dir):
-    model = tf.keras.models.load_model(model_path)
+    # Asegurarnos de que el modelo se carga con la forma de entrada correcta
+    model = tf.keras.models.load_model(model_path, compile=False)
+    model.build(input_shape=(None, 150, 150, 3))
+    model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001),
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
     
     validation_datagen = ImageDataGenerator(rescale=1./255)
 
@@ -13,11 +18,17 @@ def evaluate_model(model_path, validation_dir):
         class_mode='categorical'
     )
 
+    # Depuración: Imprimir la forma de los datos
+    for data_batch, labels_batch in validation_generator:
+        print(f'Data batch shape: {data_batch.shape}')
+        print(f'Labels batch shape: {labels_batch.shape}')
+        break  # Solo queremos imprimir la forma de los datos una vez
+
     loss, accuracy = model.evaluate(validation_generator)
     print(f'Validation Accuracy: {accuracy}')
     print(f'Validation Loss: {loss}')
 
 if __name__ == "__main__":
-    model_path = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.keras'
-    validation_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images/validation'
+    model_path = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/best_model.keras'
+    validation_dir = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/images/validation'
     evaluate_model(model_path, validation_dir)

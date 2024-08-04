@@ -25,7 +25,7 @@ def open_file_dialog():
         result_label.config(text=f'Predicted Class: {predicted_class}')
 
 if __name__ == "__main__":
-    model_path = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.keras'
+    model_path = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/best_model.keras'
 
     root = tk.Tk()
     root.title("Image Classifier")

@@ -3,51 +3,40 @@ from data_preprocessing import create_data_generators
 from model import create_model
 
 def train_model(train_dir, validation_dir, epochs=20, batch_size=32):
-    train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-        rescale=1./255,
-        rotation_range=40,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        fill_mode='nearest'
-    )
+    # Crear generadores de datos
+    train_generator, validation_generator = create_data_generators(train_dir, validation_dir, batch_size=batch_size)
 
-    validation_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
-
-    train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(150, 150),
-        batch_size=batch_size,
-        class_mode='categorical'
-    )
-
-    validation_generator = validation_datagen.flow_from_directory(
-        validation_dir,
-        target_size=(150, 150),
-        batch_size=batch_size,
-        class_mode='categorical'
-    )
-
+    # Configurar el modelo
     input_shape = (150, 150, 3)
-    model = create_model(input_shape, num_classes=len(train_generator.class_indices))
+    num_classes = len(train_generator.class_indices)
+    model = create_model(input_shape, num_classes)
 
-    steps_per_epoch = train_generator.samples // batch_size
-    validation_steps = validation_generator.samples // batch_size
+    # Configurar el punto de control para guardar el modelo
+    checkpoint_cb = tf.keras.callbacks.ModelCheckpoint(
+        'D:/Documentos/Programs/ML-Animals/ML-Animals/data/best_model.keras',
+        save_best_only=True,
+        monitor='val_accuracy',
+        mode='max',
+        verbose=1
+    )
 
+    # Configurar la detención temprana para evitar sobreajuste
+    early_stopping_cb = tf.keras.callbacks.EarlyStopping(
+        patience=5,
+        restore_best_weights=True
+    )
+
+    # Ajustar el modelo
     history = model.fit(
         train_generator,
-        steps_per_epoch=steps_per_epoch,
         epochs=epochs,
         validation_data=validation_generator,
-        validation_steps=validation_steps
+        callbacks=[checkpoint_cb, early_stopping_cb]
     )
 
-    model.save('C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.keras')
     return model, history
 
 if __name__ == "__main__":
-    train_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images/train'
-    validation_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images/validation'
+    train_dir = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/images/train'
+    validation_dir = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/images/validation'
     model, history = train_model(train_dir, validation_dir, epochs=20)
