@@ -3,32 +3,7 @@ from data_preprocessing import create_data_generators
 from model import create_model
 
 def train_model(train_dir, validation_dir, epochs=20, batch_size=32):
-    train_datagen = tf.keras.preprocessing.image.ImageDataGenerator(
-        rescale=1./255,
-        rotation_range=40,
-        width_shift_range=0.2,
-        height_shift_range=0.2,
-        shear_range=0.2,
-        zoom_range=0.2,
-        horizontal_flip=True,
-        fill_mode='nearest'
-    )
-
-    validation_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
-
-    train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(150, 150),
-        batch_size=batch_size,
-        class_mode='categorical'
-    )
-
-    validation_generator = validation_datagen.flow_from_directory(
-        validation_dir,
-        target_size=(150, 150),
-        batch_size=batch_size,
-        class_mode='categorical'
-    )
+    train_generator, validation_generator = create_data_generators(train_dir, validation_dir, batch_size)
 
     input_shape = (150, 150, 3)
     model = create_model(input_shape, num_classes=len(train_generator.class_indices))
@@ -44,7 +19,10 @@ def train_model(train_dir, validation_dir, epochs=20, batch_size=32):
         validation_steps=validation_steps
     )
 
-    model.save('C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.keras')
+    h5_model_path = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.h5'
+    model.save(h5_model_path)
+    print(f'Modelo guardado en {h5_model_path}')
+
     return model, history
 
 if __name__ == "__main__":
