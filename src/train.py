@@ -1,31 +1,63 @@
-import tensorflow as tf
+import os
+import keras_tuner as kt
 from data_preprocessing import create_data_generators
-from model import create_model
+from model import build_model
 
-def train_model(train_dir, validation_dir, epochs=20, batch_size=32):
-    train_generator, validation_generator = create_data_generators(train_dir, validation_dir, batch_size)
+def get_num_classes(train_dir):
+    train_generator, _ = create_data_generators(train_dir, None, batch_size=1)
+    return len(train_generator.class_indices)
 
-    input_shape = (150, 150, 3)
-    model = create_model(input_shape, num_classes=len(train_generator.class_indices))
+def train_model(train_dir, validation_dir):
+    if not isinstance(train_dir, str) or not os.path.isdir(train_dir):
+        raise ValueError("train_dir must be a valid directory path")
+    if validation_dir is not None and (not isinstance(validation_dir, str) or not os.path.isdir(validation_dir)):
+        raise ValueError("validation_dir must be a valid directory path or None")
+        
+    num_classes = get_num_classes(train_dir)
+    train_generator, validation_generator = create_data_generators(train_dir, validation_dir, batch_size=32)
 
-    steps_per_epoch = train_generator.samples // batch_size
-    validation_steps = validation_generator.samples // batch_size
+    def model_builder(hp):
+        return build_model(hp, num_classes)
 
-    history = model.fit(
-        train_generator,
-        steps_per_epoch=steps_per_epoch,
-        epochs=epochs,
-        validation_data=validation_generator,
-        validation_steps=validation_steps
+    tuner = kt.Hyperband(
+        model_builder,
+        objective='val_accuracy',
+        max_epochs=20,
+        hyperband_iterations=2,
+        directory='kt_dir',
+        project_name='image_classification'
     )
 
-    h5_model_path = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.h5'
-    model.save(h5_model_path)
-    print(f'Modelo guardado en {h5_model_path}')
+    if validation_generator:
+        tuner.search(
+            train_generator,
+            epochs=20,
+            validation_data=validation_generator
+        )
+    else:
+        tuner.search(
+            train_generator,
+            epochs=20
+        )
 
-    return model, history
+    best_model = tuner.get_best_models(num_models=1)[0]
+    best_model.save('C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.h5')
+
+    best_hps = tuner.get_best_hyperparameters(num_trials=1)[0]
+    print(f"Best hyperparameters: {best_hps.values}")
+
+    final_accuracy = best_hps.values.get('val_accuracy', 'N/A')
+    print(f'Final Validation Accuracy: {final_accuracy:.2f}%')
+
+    return best_model
 
 if __name__ == "__main__":
     train_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images/train'
     validation_dir = 'C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/images/validation'
-    model, history = train_model(train_dir, validation_dir, epochs=20)
+    
+    if not os.path.isdir(train_dir):
+        raise ValueError(f"The provided train directory path is not valid: {train_dir}")
+    if validation_dir is not None and not os.path.isdir(validation_dir):
+        raise ValueError(f"The provided validation directory path is not valid: {validation_dir}")
+        
+    model = train_model(train_dir, validation_dir)
