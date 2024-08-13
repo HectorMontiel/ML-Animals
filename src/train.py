@@ -40,3 +40,5 @@ if __name__ == "__main__":
     train_dir = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/images/train'
     validation_dir = 'D:/Documentos/Programs/ML-Animals/ML-Animals/data/images/validation'
     model, history = train_model(train_dir, validation_dir, epochs=20)
+
+

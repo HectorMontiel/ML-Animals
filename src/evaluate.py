@@ -18,6 +18,8 @@ def evaluate_model(model_path, validation_dir):
         class_mode='categorical'
     )
 
+    
+
     # Depuración: Imprimir la forma de los datos
     for data_batch, labels_batch in validation_generator:
         print(f'Data batch shape: {data_batch.shape}')
