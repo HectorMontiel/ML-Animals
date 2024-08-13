@@ -5,7 +5,10 @@ def create_data_generators(train_dir, validation_dir, batch_size):
         rescale=1./255,
         shear_range=0.2,
         zoom_range=0.2,
-        horizontal_flip=True
+        horizontal_flip=True,
+        rotation_range=30,  # Added rotation
+        width_shift_range=0.2,
+        height_shift_range=0.2
     )
     val_datagen = tf.keras.preprocessing.image.ImageDataGenerator(rescale=1./255)
 

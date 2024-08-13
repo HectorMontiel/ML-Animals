@@ -30,13 +30,13 @@ def get_num_classes_and_save_mapping(train_dir, mapping_path):
 
 def train_model(train_dir, validation_dir, mapping_path):
     num_classes = get_num_classes_and_save_mapping(train_dir, mapping_path)
-    train_generator, validation_generator = create_data_generators(train_dir, validation_dir, batch_size=32)
+    train_generator, validation_generator = create_data_generators(train_dir, validation_dir, batch_size=16)
     
     model = build_model(num_classes)
     
-    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
     checkpoint = ModelCheckpoint('C:/Users/monti001/Documents/Trabajos/Progra/ML-Animals/data/best_model.keras', monitor='val_accuracy', save_best_only=True)
-    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.00001)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5, patience=3, min_lr=0.00001)
     custom_callback = CustomCallback()
     
     model.compile(optimizer=Adam(learning_rate=0.0001),
@@ -45,7 +45,7 @@ def train_model(train_dir, validation_dir, mapping_path):
     
     history = model.fit(
         train_generator,
-        epochs=1,
+        epochs=15,
         validation_data=validation_generator,
         callbacks=[early_stopping, checkpoint, reduce_lr, custom_callback]
     )
